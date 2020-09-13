@@ -1,0 +1,15 @@
+{
+    "name": "Remote Container for Redmine Issue Loader",
+    "dockerComposeFile": [
+        "../docker/docker-compose.yml",
+        "../docker/docker-compose.personal.yml",
+        "docker-compose.remote.yml",
+    ],
+    "service": "dev",
+    "workspaceFolder": "/home/builder/workspace",
+    "initializeCommand": [
+        "bash", "./docker/setup.sh"
+    ],
+    "extensions": [
+    ],
+}
