@@ -8,11 +8,13 @@ import lombok.Data;
 @AllArgsConstructor
 @Data
 public class IssueId implements PrimaryKey {
+    
+    public static final String NAME = "issue_id";
 
     private int id;
 
     @Override
     public QueryParameter getQueryParameter() {
-        return new QueryParameter("issue_id", String.valueOf(id));
+        return new QueryParameter(NAME, String.valueOf(id));
     }
 }

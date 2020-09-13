@@ -64,18 +64,24 @@ public class IssueLoadRunner {
 
         int issueCount = 0;
         try (IssueRecords issueRecords = IssueRecords.parse(csvPath, config)) {
-
-            for (IssueRecord issueRecord : issueRecords) {
-
-                if (config.getMode() == LoadMode.CREATE) {
+            if (config.getMode() == LoadMode.CREATE) {
+                for (IssueRecord issueRecord : issueRecords) {
                     IssueId issueId = loader.create(issueRecord.getFields());
                     println(String.format("#%d is created.", issueId.getId()));
-                } else {
+                    issueCount++;
+                }
+            } else if (config.getMode() == LoadMode.OVERWRITE) {
+                for (IssueRecord issueRecord : issueRecords) {
+                    IssueId issueId = loader.overwrite(issueRecord.getPrimaryKey(), issueRecord.getFields());
+                    println(String.format("#%d is overwrited.", issueId.getId()));
+                    issueCount++;
+                }
+            } else {
+                for (IssueRecord issueRecord : issueRecords) {
                     IssueId issueId = loader.update(issueRecord.getPrimaryKey(), issueRecord.getFields());
                     println(String.format("#%d is updated.", issueId.getId()));
+                    issueCount++;
                 }
-
-                issueCount++;
             }
         }
 
@@ -93,7 +99,7 @@ public class IssueLoadRunner {
                 throw new IllegalArgumentException("Project ID and Subject are required when created.");
             }
 
-        } else {
+        } else if (config.getMode() == LoadMode.UPDATE) {
             // 更新
 
             long primaryKeyCount = config.getFields().stream()
@@ -128,6 +134,39 @@ public class IssueLoadRunner {
             if (primaryKeyFieldType != FieldType.ISSUE_ID
                     && primaryKeyFieldType != FieldType.CUSTOM_FIELD) {
                 // チケットIDとカスタムフィールド以外はプライマリキーとして使用不可
+                throw new IllegalArgumentException(
+                        "Field type [" + primaryKeyFieldType + "] can not be used as a primary key.");
+            }
+        } else if (config.getMode() == LoadMode.OVERWRITE) {
+
+            // プライマリーキーが1件より多い場合はエラー
+            long primaryKeyCount = config.getFields().stream()
+                    .filter(FieldSetting::isPrimaryKey)
+                    .count();
+            if (primaryKeyCount > 1) {
+                throw new IllegalArgumentException("There are multiple primary keys.");
+            }
+
+            if (config.getFields().size() == 1) {
+                // プライマリーキーしかない
+                // -> 更新対象のフィールドが無い
+                throw new IllegalArgumentException("The field to be updated is not set.");
+            }
+
+            if (config.getFields().stream().anyMatch(x -> x.getType() == FieldType.ISSUE_ID)) {
+                // IssueIDが存在する場合はエラー
+                // OVERWRITEはIssueIDを取り扱うことができない
+                throw new IllegalArgumentException("OVERWRITE cannnot use Issue ID.");
+            }
+
+            FieldType primaryKeyFieldType = config.getFields().stream()
+                    .filter(FieldSetting::isPrimaryKey)
+                    .map(FieldSetting::getType)
+                    .findFirst()
+                    .get();
+
+            if (primaryKeyFieldType != FieldType.CUSTOM_FIELD) {
+                // カスタムフィールド以外はプライマリキーとして使用不可
                 throw new IllegalArgumentException(
                         "Field type [" + primaryKeyFieldType + "] can not be used as a primary key.");
             }

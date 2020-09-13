@@ -4,5 +4,7 @@ public enum LoadMode {
 
     CREATE,
 
-    UPDATE
+    UPDATE,
+
+    OVERWRITE
 }

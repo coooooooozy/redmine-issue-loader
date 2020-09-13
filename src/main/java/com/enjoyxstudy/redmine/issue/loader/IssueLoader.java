@@ -51,4 +51,31 @@ public class IssueLoader {
         // 更新対象となったIssueIdを返却
         return new IssueId(targetIssueId);
     }
+
+    public IssueId overwrite(PrimaryKey key, Map<String, Object> targetFields) throws IOException {
+
+        if (key.getQueryParameter().getName() == IssueId.NAME) {
+            throw new IllegalStateException("Overwrite cannot use issue id as primary key.");
+        }
+
+        // キーとなる情報を使ってIssueを検索
+        List<Issue> targetIssues = client.getIssues(
+                Arrays.asList(
+                        ALL_STATUS_QUERY, // 終了しているチケットも対象にするため指定
+                        key.getQueryParameter()));
+
+        // 1件ではない場合はエラー
+        if (targetIssues.size() > 1) {
+            throw new IllegalStateException("There are multiple target issue. " + key);
+        }
+
+        if (targetIssues.size() == 0) {
+            int issueId = client.createIssue(targetFields);
+            return new IssueId(issueId);
+        } else {
+            int targetIssueId = targetIssues.get(0).getId();
+            client.updateIssue(targetIssueId, targetFields);
+            return new IssueId(targetIssueId);
+        }
+    }
 }
