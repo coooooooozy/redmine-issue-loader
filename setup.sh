@@ -16,7 +16,7 @@ if [ ! -e .git ]; then
     git clone \
         https://github.com/TinyFort/Kurage.git \
         tmp \
-        --branch master \
+        --branch stable \
         --depth 1 \
         --no-checkout
     mv --update tmp/.git .
@@ -24,7 +24,7 @@ if [ ! -e .git ]; then
     git reset \
         --hard \
         --recurse-submodules \
-        origin/master
+        origin/stable
     git submodule update --init
 fi
 
