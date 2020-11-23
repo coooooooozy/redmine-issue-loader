@@ -26,14 +26,9 @@ RUN apt-get update  -y \
     git \
     gnupg \
     nano \
+    openjdk-11-jdk \
+    openjdk-11-jdk-headless \
     software-properties-common
-#   openjdk-11-jdk \
-#   openjdk-11-jdk-headless \
-
-RUN apt-add-repository 'deb http://security.debian.org/debian-security stretch/updates main' \
- && apt-get update -y \
- && apt-get install -y --no-install-recommends \
-    openjdk-8-jdk
 
 ## Clean up
 RUN apt-get -y update \
@@ -65,8 +60,5 @@ RUN mkdir -p /home/builder/workspace
 USER root
 RUN usermod -L root
 USER builder
-
-# VOLUME  homevolume:/home/builder
-# VOLUME  workvolume:/home/builder/workspace
 
 CMD bash
