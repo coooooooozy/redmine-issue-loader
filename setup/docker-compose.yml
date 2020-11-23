@@ -1,0 +1,10 @@
+version: '3'
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      network: "host"
+    network_mode: "host"
+    volumes:
+      - ..:/home/builder/workspace
